@@ -1,5 +1,5 @@
-# HackNC
-Intellistocks: a personalized recommendation system for daily stock market fluctuation and platform for investment portfolio management.
+# Intellistocks
+HackNC 2020 Winner - Most Innovative Hack 
 
 https://intellistocks.uc.r.appspot.com/ or run 
 
