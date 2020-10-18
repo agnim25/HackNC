@@ -1,0 +1,278 @@
+{% extends "layout.html" %}
+{% block title %} {{ title }} {% endblock %}
+{% block head %}
+	{{ super() }}
+{% endblock %}
+{% block content %}
+	<div class="jumbotron">
+		<h1 class="display-3" style="text-align: center;">{{ title }}</h1>
+		<div style="width: 40%; display: inline-block; vertical-align: top; margin: 20px;">
+		<form method="POST">
+			<fieldset>
+				<legend>{{ form_name }}</legend>
+				<legend id="email" style="display: none">{{ email }}</legend>
+				<div class="feedgrabbr_widget" id="fgid_d49cd2258c46bea398a527055"></div>
+<script>if (typeof (fg_widgets) === "undefined") fg_widgets = new Array(); fg_widgets.push("fgid_d49cd2258c46bea398a527055");</script>
+<script async src="https://www.feedgrabbr.com/widget/fgwidget.js"></script>
+				<div class="form-group">
+					<br>
+					Enter headlines for prediction: {{ form.text(class="form-control", oninput="checkLink()") }}
+				</div>
+				{{ form.submit(class="btn btn-primary", value="See Prediction") }}
+			</fieldset>
+		</form>
+		</div>
+		<div style="width: 40%; display: inline-block; vertical-align: top; margin: 20px;">
+			<legend>Manage Portfolio</legend>
+			<div id="holdings"></div>
+			<br><br>
+			<form action="JavaScript:addHolding()" autocomplete="off">
+				Add holding:
+				<div class="autocomplete" style="width:300px;">
+				<input type="text" id="newHolding" name="myCountry">
+			</div>
+				<input class="btn btn-primary" type="submit" name="submit" value="Add to Portfolio">
+				<button type="button" class="btn btn-secondary" onclick="removeHolding()">Remove from Portfolio</button>
+			</form>
+
+  
+		</div>
+	</div>
+	<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+	<script>
+		document.getElementById('content').style.margin = '0 5vw';
+		document.getElementById('content').style.maxWidth = '90vw';
+	</script>
+	<script src="https://apis.google.com/js/platform.js" async defer></script>
+	<script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-firestore.js"></script>
+	<!-- <script src="http://requirejs.org/docs/release/2.1.5/comments/require.min.js"></script>
+	<script src="/__/firebase/init.js"></script> -->
+	<script>
+		function checkLink() {
+			console.log('test');
+			val = document.getElementById('text').value;
+			if (val.includes('cnbc')) {
+				document.getElementById('text').value = val.substring(val.lastIndexOf('/') + 1, val.lastIndexOf('.')).replaceAll("-", " ");
+			}
+		}
+		
+
+	</script>
+	<script>
+		
+	if (!firebase.apps.length) {
+	firebase.initializeApp({
+	  apiKey: 'AIzaSyDIqqe0frgdWcwWjXRX0oH6g4_NcLPXrOU',
+	  authDomain: 'https://intellistocks.uc.r.appspot.com',
+	  projectId: 'intellistocks'
+	});
+	}
+	
+	email = document.getElementById('email').innerHTML;
+	console.log(email)
+	var db = firebase.firestore();
+	db.collection("users").get().then((querySnapshot) => {
+		querySnapshot.forEach((doc) => {
+			if (doc.get('email') == email) {
+				holdings = doc.get('holdings');
+				if (holdings.length == 0) {
+					document.getElementById('holdings').innerHTML += 'Your portfolio is empty. To start, add a holding below.';
+				} else {
+				document.getElementById('holdings').innerHTML += 'Current holdings, click stock symbol to see more information:<br><ul>';
+				for (i = 0; i < holdings.length; i++) {
+					$.when($('#holdings').append(`<li><button style="border: none; background-color: transparent; text-decoration: underline;" type="button"><a href="https://www.google.com/finance/quote/` + holdings[i].substring(holdings[i].lastIndexOf(' ') + 2).split(':')[1].slice(0, -1) + ':' + holdings[i].substring(holdings[i].lastIndexOf(' ') + 1).split(':')[0].slice(1) + `" target="_blank" style="color: black">`  + holdings[i] + `</a></button></li><div class="modal fade" id="modal` + i.toString() + `" tabindex="-1" role="dialog" aria-labelledby="modal` + i.toString() + `Label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal` + i.toString() + `Label">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="modal-body` + i.toString() + `">
+
+		<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/symbols/` + holdings[i].substring(holdings[i].lastIndexOf(' ') + 1).replace(':', '-') + `/" rel="noopener" target="_blank"><span class="blue-text">` + holdings[i] + ` Chart</span></a> by TradingView</div>
+  
+
+</div>
+<!-- TradingView Widget END -->
+		
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="removeHolding(` + i.toString() + `)">Remove from Portfolio</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Back to Dashboard</button>
+      </div>
+    </div>
+  </div>
+</div>`)).then(
+$('#modal-body' + i.toString()).append(
+	`<script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-profile.js" async>
+  {
+	"symbol": "` +holdings[i].substring(holdings[i].lastIndexOf(' ') + 2, holdings[i].lastIndexOf(')') ) + `",
+  "width": 480,
+  "height": 650,
+  "colorTheme": "light",
+  "isTransparent": false,
+  "locale": "en"
+}
+  <\/script>`
+));
+
+
+
+}
+				document.getElementById('holdings').innerHTML += '</ul>';
+				}
+			}
+		});
+		});
+		
+	var djs = ['3M (NYSE:MMM)', 'American Express (NYSE:AXP)', 'Apple (NASDAQ:AAPL)', 'Boeing (NYSE:BA)', 'Caterpillar (NYSE:CAT)', 'Chevron (NYSE:CVX)', 'Cisco (NASDAQ:CSCO)', 'Coca-Cola (NYSE:KO)', 'The Walt Disney Company (NYSE:DIS)', 'DowDuPont (NYSE:DD)', 'ExxonMobil (NYSE:XOM)', 'General Electric (NYSE:GE)', 'Goldman Sachs (NYSE:GS)', 'The Home Depot (NYSE:HD)', 'IBM (NYSE:IBM)', 'Intel (NASDAQ:INTC)', 'Johnson & Johnson (NYSE:JNJ)', 'JPMorgan Chase (NYSE:JPM)', "McDonald's (NYSE:MCD)", 'Merck (NYSE:MRK)', 'Microsoft (NASDAQ:MSFT)', 'Nike (NYSE:NKE)', 'Pfizer (NYSE:PFE)', 'Procter & Gamble (NYSE:PG)', 'Travelers Companies, Inc. (NYSE:TRV)', 'United Technologies (NYSE:RTX)', 'UnitedHealth (NYSE:UNH)', 'Verizon (NYSE:VZ)', 'Visa (NYSE:V)', 'Wal-Mart (NYSE:WMT)']
+
+	function addHolding() {
+		if (djs.includes(document.getElementById('newHolding').value)) {
+		db.collection("users").get().then((querySnapshot) => {
+		querySnapshot.forEach((doc) => {
+			if (doc.get('email') == email) {
+				var updateDoc = db.collection("users").doc(doc.id);
+				updateDoc.update({
+					holdings: firebase.firestore.FieldValue.arrayUnion(document.getElementById('newHolding').value)
+				}).then(result => {
+					console.log(result)
+				}).then(result1 => {
+					window.location.reload(false); 
+				});
+			}
+		});
+		// window.location.reload(false); 
+		});
+	} else {
+		alert('Must be in the Dow Jones Industrial Average. To correctly enter stock, select from autocomplete.')
+	}
+	}
+	function removeHolding() {
+		db.collection("users").get().then((querySnapshot) => {
+		querySnapshot.forEach((doc) => {
+			if (doc.get('email') == email) {
+				var updateDoc = db.collection("users").doc(doc.id);
+				// console.log(document.getElementById(i).innerHTML)
+				updateDoc.update({
+					holdings: firebase.firestore.FieldValue.arrayRemove(document.getElementById('newHolding').value)
+				}).then(result => {
+					console.log(result)
+				}).then(result1 => {
+					window.location.reload(false); 
+				});
+			}
+		});
+		// window.location.reload(false); 
+		});
+	}
+
+	</script>
+	<script>
+		var djs = ['3M (NYSE:MMM)', 'American Express (NYSE:AXP)', 'Apple (NASDAQ:AAPL)', 'Boeing (NYSE:BA)', 'Caterpillar (NYSE:CAT)', 'Chevron (NYSE:CVX)', 'Cisco (NASDAQ:CSCO)', 'Coca-Cola (NYSE:KO)', 'The Walt Disney Company (NYSE:DIS)', 'DowDuPont (NYSE:DD)', 'ExxonMobil (NYSE:XOM)', 'General Electric (NYSE:GE)', 'Goldman Sachs (NYSE:GS)', 'The Home Depot (NYSE:HD)', 'IBM (NYSE:IBM)', 'Intel (NASDAQ:INTC)', 'Johnson & Johnson (NYSE:JNJ)', 'JPMorgan Chase (NYSE:JPM)', "McDonald's (NYSE:MCD)", 'Merck (NYSE:MRK)', 'Microsoft (NASDAQ:MSFT)', 'Nike (NYSE:NKE)', 'Pfizer (NYSE:PFE)', 'Procter & Gamble (NYSE:PG)', 'Travelers Companies, Inc. (NYSE:TRV)', 'United Technologies (NYSE:RTX)', 'UnitedHealth (NYSE:UNH)', 'Verizon (NYSE:VZ)', 'Visa (NYSE:V)', 'Wal-Mart (NYSE:WMT)']
+function autocomplete(inp, arr) {
+  /*the autocomplete function takes two arguments,
+  the text field element and an array of possible autocompleted values:*/
+  var currentFocus;
+  /*execute a function when someone writes in the text field:*/
+  inp.addEventListener("input", function(e) {
+      var a, b, i, val = this.value;
+      /*close any already open lists of autocompleted values*/
+      closeAllLists();
+      if (!val) { return false;}
+      currentFocus = -1;
+      /*create a DIV element that will contain the items (values):*/
+      a = document.createElement("DIV");
+      a.setAttribute("id", this.id + "autocomplete-list");
+      a.setAttribute("class", "autocomplete-items");
+      /*append the DIV element as a child of the autocomplete container:*/
+      this.parentNode.appendChild(a);
+      /*for each item in the array...*/
+      for (i = 0; i < arr.length; i++) {
+        /*check if the item starts with the same letters as the text field value:*/
+        if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+          /*create a DIV element for each matching element:*/
+          b = document.createElement("DIV");
+          /*make the matching letters bold:*/
+          b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+          b.innerHTML += arr[i].substr(val.length);
+          /*insert a input field that will hold the current array item's value:*/
+          b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+          /*execute a function when someone clicks on the item value (DIV element):*/
+              b.addEventListener("click", function(e) {
+              /*insert the value for the autocomplete text field:*/
+              inp.value = this.getElementsByTagName("input")[0].value;
+              /*close the list of autocompleted values,
+              (or any other open lists of autocompleted values:*/
+              closeAllLists();
+          });
+          a.appendChild(b);
+        }
+      }
+  });
+  /*execute a function presses a key on the keyboard:*/
+  inp.addEventListener("keydown", function(e) {
+      var x = document.getElementById(this.id + "autocomplete-list");
+      if (x) x = x.getElementsByTagName("div");
+      if (e.keyCode == 40) {
+        /*If the arrow DOWN key is pressed,
+        increase the currentFocus variable:*/
+        currentFocus++;
+        /*and and make the current item more visible:*/
+        addActive(x);
+      } else if (e.keyCode == 38) { //up
+        /*If the arrow UP key is pressed,
+        decrease the currentFocus variable:*/
+        currentFocus--;
+        /*and and make the current item more visible:*/
+        addActive(x);
+      } else if (e.keyCode == 13) {
+        /*If the ENTER key is pressed, prevent the form from being submitted,*/
+        e.preventDefault();
+        if (currentFocus > -1) {
+          /*and simulate a click on the "active" item:*/
+          if (x) x[currentFocus].click();
+        }
+      }
+  });
+  function addActive(x) {
+    /*a function to classify an item as "active":*/
+    if (!x) return false;
+    /*start by removing the "active" class on all items:*/
+    removeActive(x);
+    if (currentFocus >= x.length) currentFocus = 0;
+    if (currentFocus < 0) currentFocus = (x.length - 1);
+    /*add class "autocomplete-active":*/
+    x[currentFocus].classList.add("autocomplete-active");
+  }
+  function removeActive(x) {
+    /*a function to remove the "active" class from all autocomplete items:*/
+    for (var i = 0; i < x.length; i++) {
+      x[i].classList.remove("autocomplete-active");
+    }
+  }
+  function closeAllLists(elmnt) {
+    /*close all autocomplete lists in the document,
+    except the one passed as an argument:*/
+    var x = document.getElementsByClassName("autocomplete-items");
+    for (var i = 0; i < x.length; i++) {
+      if (elmnt != x[i] && elmnt != inp) {
+      x[i].parentNode.removeChild(x[i]);
+    }
+  }
+}
+/*execute a function when someone clicks in the document:*/
+document.addEventListener("click", function (e) {
+    closeAllLists(e.target);
+});
+}
+
+autocomplete(document.getElementById("newHolding"), djs);
+	</script>
+{% endblock %}

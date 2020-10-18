@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% block title %} {{ title }} {% endblock %}
+{% block head %}
+	{{ super() }}
+{% endblock %}
+{% block content %}
+<meta name="google-signin-client_id" content="697355349317-diks5521f1kmrgeniig8c9186rbods40.apps.googleusercontent.com">
+	<div class="jumbotron">
+		<h1 class="display-3" style="text-align: center;">{{ title }}</h1>
+		<p class="lead">Intellistocks is a platform for individualized recommendations for investing in the stock market. Stock investing poses risks even for professionals, but with Intellistock's use of machine learning for predicting daily change in opening prices, we strive to alleviate some of the risks and provide to both beginners and experienced investors tips and tools for making informed financial decisions. 
+			</p>
+			<div style="margin-left: calc(50% - 100px); width: 200px" class="g-signin2" data-onsuccess="onSignIn"></div>
+
+			<form method="POST" id="myForm" name="myForm" style="text-align: center; margin: 20px">
+				<fieldset>
+					<div class="form-group" style="display: none;">
+						<br>
+						{{ form.name(class="form-control") }}
+						{{ form.email(class="form-control") }}
+						{{ form.new(class="form-control") }}
+					</div>
+					{{ form.submit(class="btn btn-primary", value="Continue to Dashboard")}}
+				</fieldset>
+			</form>
+
+
+			<script src="https://apis.google.com/js/platform.js" async defer></script>
+<script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-firestore.js"></script>
+<!-- <script src="http://requirejs.org/docs/release/2.1.5/comments/require.min.js"></script>
+<script src="/__/firebase/init.js"></script> -->
+<script>
+	
+function onSignIn(googleUser) {
+// const firebase = require(["firebase"]);
+// Required for side-effects
+// require("firebase/firestore");
+// Initialize Cloud Firestore through Firebase
+if (!firebase.apps.length) {
+firebase.initializeApp({
+  apiKey: 'AIzaSyDIqqe0frgdWcwWjXRX0oH6g4_NcLPXrOU',
+  authDomain: 'https://intellistocks.uc.r.appspot.com',
+  projectId: 'intellistocks'
+});
+}
+
+var db = firebase.firestore();
+  var profile = googleUser.getBasicProfile();
+  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+  console.log('Name: ' + profile.getName());
+  console.log('Image URL: ' + profile.getImageUrl());
+  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+  var isNew = true;
+  db.collection("users").get().then((querySnapshot) => {
+    querySnapshot.forEach((doc) => {
+		if(doc.get('email') == profile.getEmail()) {
+			console.log('lol')
+			isNew = false;
+		}
+	});
+
+	console.log(isNew)
+if(isNew) {
+	db.collection("users").add({
+		name: profile.getName(),
+		holdings: [],
+		email: profile.getEmail()
+})
+}
+
+document.getElementById('name').value = profile.getName();
+document.getElementById('email').value = profile.getEmail();
+document.getElementById('new').value = isNew;
+$('#myForm').submit();
+
+	});
+
+}
+</script>
+
+{% endblock %}

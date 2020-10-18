@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block title %} {{ title }} {% endblock %}
+{% block head %}
+	{{ super() }}
+{% endblock %}
+{% block content %}
+	<div class="jumbotron">
+		<h2 style="text-align: center;">{{ title }}</h2>
+		<form method="POST">
+			<fieldset>
+				<!-- <legend>{{ form_name }}</legend> -->
+				<div class="form-group">
+					<br>
+					From the news headlines,
+					{{ text }}
+					<br>
+					We predict the Dow should open at <b>{{ recs[0][0] }}</b> from the previous opening price.
+				</div>
+				{{ form.submit(class="btn btn-primary", value="Return to Dashboard") }}
+			</fieldset>
+		</form>
+		<br><br>
+		<h2 style="text-align: center;">About the Model</h2>
+		<p>This model takes in the news from a given day will be used to predict the difference in opening price between that day, and the following day. This method is chosen because it should allow all of the day's news to be incorporated into the price compared to closing price, which could only incorporate the day's morning and afternoon news.
+		</p>
+		<p>The model was developed using GloVe to create our word embeddings and CNNs followed by LSTMs from the Keras high-level API running on TensorFlow to build the model.</p>
+
+		<p>From the model, we generated the following statistical analyses on predictions made on a sample of known opening price changes, effectively measuring an "accuracy" for the model, as you weigh the predicted market change in your financial decisions:</p>
+	<br>
+		<p style="font-weight: bold; text-align: center;" >Summary of actual opening price changes vs Summary of predicted opening price changes:</p>
+		<p style="column-count: 2; text-align: center;">
+			count  299.000000 <br>
+			mean    -7.094101 <br>
+			std    139.532324 <br>
+			min   -541.050782 <br>
+			25%    -87.465332 <br>
+			50%    -10.759766 <br>
+			75%     54.689941 <br>
+			max    673.139648 <br>
+
+			count  299.000000 <br>
+		mean   -79.194793 <br>
+		std     10.708085 <br>
+		min   -100.102051 <br>
+		25%    -87.073853 <br>
+		50%    -79.778564 <br>
+		75%    -72.591766 <br>
+		max    -46.489258 <br>
+		</p>
+
+		<p style="text-align: center">
+		<img src="https://i.ibb.co/WvTXLwb/model-acc.png"  height="400" width="850" alt="model-acc" border="0">
+	</p>
+
+	</div>
+	<script>
+		document.getElementById('content').style.margin = 0;
+		document.getElementById('content').style.maxWidth = '100vw';
+	</script>
+{% endblock %}
